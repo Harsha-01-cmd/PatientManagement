@@ -104,9 +104,24 @@ def create_patient(patient: PatientInput) -> PatientRecord:
 
 
 @app.get("/patients", response_model=list[PatientRecord])
-def list_patients() -> list[PatientRecord]:
+def list_patients(
+    sort_by: Literal["patient_id", "age", "height_m", "weight_kg", "bmi"] = Query(
+        default="patient_id"
+    ),
+    order: Literal["asc", "desc"] = Query(default="asc"),
+) -> list[PatientRecord]:
+    sort_expressions = {
+        "patient_id": "patient_id",
+        "age": "age",
+        "height_m": "height_m",
+        "weight_kg": "weight_kg",
+        "bmi": "weight_kg / (height_m * height_m)",
+    }
+    direction = "DESC" if order == "desc" else "ASC"
     with connect_database() as connection:
-        rows = connection.execute("SELECT * FROM patients ORDER BY patient_id").fetchall()
+        rows = connection.execute(
+            f"SELECT * FROM patients ORDER BY {sort_expressions[sort_by]} {direction}, patient_id"
+        ).fetchall()
     return [to_record(row) for row in rows]
 
 

@@ -50,3 +50,25 @@ def test_duplicate_ids_and_invalid_input_are_rejected(client):
     assert client.post("/patients", json=patient).status_code == 409
     patient["age"] = 0
     assert client.post("/patients", json=patient).status_code == 422
+
+
+def test_patient_sorting(client):
+    for patient_id, age, weight in (("P-2", 45, 80), ("P-1", 25, 60)):
+        response = client.post(
+            "/patients",
+            json={
+                "patient_id": patient_id,
+                "name": "Test Patient",
+                "city": "Pune",
+                "age": age,
+                "gender": "other",
+                "height_m": 1.7,
+                "weight_kg": weight,
+            },
+        )
+        assert response.status_code == 201
+
+    ascending = client.get("/patients?sort_by=age&order=asc")
+    descending = client.get("/patients?sort_by=age&order=desc")
+    assert [patient["age"] for patient in ascending.json()] == [25, 45]
+    assert [patient["age"] for patient in descending.json()] == [45, 25]
