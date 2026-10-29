@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+from collections.abc import Iterator
+from contextlib import asynccontextmanager, contextmanager
 import os
 from pathlib import Path
 import sqlite3
@@ -36,10 +37,18 @@ class PatientRecord(PatientInput):
     bmi_category: str
 
 
-def connect_database() -> sqlite3.Connection:
+@contextmanager
+def connect_database() -> Iterator[sqlite3.Connection]:
     connection = sqlite3.connect(DATABASE_PATH)
     connection.row_factory = sqlite3.Row
-    return connection
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def initialize_database() -> None:
