@@ -1,6 +1,8 @@
 # Patient Records API
 
-A small FastAPI service for maintaining patient records in a local SQLite database. BMI and its category are calculated from height and weight whenever a record is returned.
+> A lightweight REST API for managing patient records with SQLite persistence, BMI summaries, and sorting.
+
+Patient records are stored in a local SQLite database. BMI and its category are calculated from height and weight whenever a record is returned.
 
 ## Run
 
